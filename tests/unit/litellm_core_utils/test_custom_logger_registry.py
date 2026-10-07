@@ -113,9 +113,8 @@ async def use_callback_in_llm_call(callback: str, used_in: Literal["callbacks", 
             "branch": "main",  # optional, defaults to main
         }
         # Mock BitBucket HTTP calls to prevent actual API requests
-        from unittest.mock import MagicMock
-
         import httpx
+        from unittest.mock import MagicMock
 
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -172,6 +171,7 @@ async def use_callback_in_llm_call(callback: str, used_in: Literal["callbacks", 
             assert len(litellm.failure_callback) == 1
             assert len(litellm.callbacks) == 1
         elif used_in == "success_callback":
+            print(f"litellm.success_callback: {litellm.success_callback}")
             print(f"litellm._async_success_callback: {litellm._async_success_callback}")
             assert isinstance(litellm.success_callback[0], expected_class)
             assert len(litellm.success_callback) == 1  # ["lago", LagoLogger]

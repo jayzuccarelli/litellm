@@ -5360,6 +5360,7 @@ async def test_basic_s3_logging(sync_mode, streaming):
         )
         if streaming:
             for chunk in response:
+                print()
                 response_id = chunk.id
         else:
             response_id = response.id
@@ -5373,10 +5374,12 @@ async def test_basic_s3_logging(sync_mode, streaming):
         )
         if streaming:
             async for chunk in response:
+                print(chunk)
                 response_id = chunk.id
         else:
             response_id = response.id
         await asyncio.sleep(2)
+    print(f"response: {response}")
 
     total_objects, all_s3_keys = list_all_s3_objects("load-testing-oct")
 
@@ -5399,6 +5402,9 @@ async def test_basic_s3_logging(sync_mode, streaming):
 @pytest.mark.flaky(retries=3, delay=1)
 async def test_basic_s3_v2_logging(streaming):
     from litellm.integrations.s3_v2 import S3Logger
+    from unittest.mock import AsyncMock
+    from unittest.mock import MagicMock
+    from unittest.mock import patch
 
     litellm.s3_callback_params = {
         "s3_bucket_name": "load-testing-oct",
@@ -5411,6 +5417,7 @@ async def test_basic_s3_v2_logging(streaming):
     litellm.callbacks = [s3_v2_logger]
 
     uploaded_keys: list = []
+    original_upload = s3_v2_logger.async_upload_data_to_s3
 
     async def mock_upload(batch_logging_element):
         uploaded_keys.append(batch_logging_element.s3_object_key)
@@ -5452,6 +5459,7 @@ async def test_basic_s3_v2_logging(streaming):
 async def test_basic_s3_v2_logging_failure():
     """Test that S3 v2 logger makes httpx PUT request when logging failures"""
     from unittest.mock import AsyncMock, MagicMock
+    from unittest.mock import patch
 
     from litellm.integrations.s3_v2 import S3Logger
 
@@ -5464,6 +5472,7 @@ async def test_basic_s3_v2_logging_failure():
     s3_v2_logger.async_httpx_client = AsyncMock()
     s3_v2_logger.async_httpx_client.put.return_value = mock_response
 
+    original_upload = s3_v2_logger.async_upload_data_to_s3
     upload_called = False
 
     async def mock_upload(batch_logging_element):
@@ -5487,18 +5496,19 @@ async def test_basic_s3_v2_logging_failure():
     litellm.set_verbose = True
 
     try:
-        await litellm.acompletion(
+        response = await litellm.acompletion(
             model="gpt-5-mini",
             api_key="invalid-api-key",
             messages=[{"role": "user", "content": "This is a test"}],
             mock_response=Exception("forced failure for S3 logging test"),
         )
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Expected error: {e}")
 
     await asyncio.sleep(5)
 
     assert upload_called, "S3 upload method was not called"
+    print("✓ S3 upload method was called")
 
     s3_v2_logger.async_httpx_client.put.assert_called()
 
@@ -5507,13 +5517,44 @@ async def test_basic_s3_v2_logging_failure():
     url = call_args[1]["url"] if "url" in call_args[1] else call_args[0][0]
 
     assert "test-bucket.s3.us-west-2.amazonaws.com" in url
+    print(f"✓ S3 PUT request made to: {url}")
 
     headers = call_args[1]["headers"]
     assert headers["Content-Type"] == "application/json"
+    print("✓ S3 request headers are correct")
 
     data = call_args[1]["data"]
     assert data is not None
     assert '"model": "gpt-5-mini"' in data
+    print("✓ S3 request data contains expected log payload")
+
+
+async def make_async_calls():
+    tasks = []
+    for _ in range(5):
+        task = asyncio.create_task(
+            litellm.acompletion(
+                model="azure/gpt-4.1-mini",
+                messages=[{"role": "user", "content": "This is a test"}],
+                max_tokens=5,
+                temperature=0.7,
+                timeout=5,
+                user="langfuse_latency_test_user",
+                mock_response="It's simple to use and easy to get started",
+            )
+        )
+        tasks.append(task)
+
+    start_time = asyncio.get_event_loop().time()
+    responses = await asyncio.gather(*tasks)
+
+    for idx, response in enumerate(responses):
+        print(f"Response from Task {idx + 1}: {response}")
+
+    total_time = asyncio.get_event_loop().time() - start_time
+
+    return total_time
+
 
 def list_all_s3_objects(bucket_name):
     s3 = boto3.client("s3")
@@ -5528,6 +5569,8 @@ def list_all_s3_objects(bucket_name):
             total_objects += len(page["Contents"])
             all_s3_keys.extend([obj["Key"] for obj in page["Contents"]])
 
+    print(f"Total number of objects in {bucket_name}: {total_objects}")
+    print(all_s3_keys)
     return total_objects, all_s3_keys
 
 class TestS3Logger(S3Logger):
@@ -5538,5 +5581,6 @@ class TestS3Logger(S3Logger):
 
     async def async_log_success_event(self, kwargs, response_obj, start_time, end_time):
         self.recorded_requests[response_obj["id"]] = start_time
+        print("recorded request", self.recorded_requests)
         self.logged_standard_logging_payload = kwargs["standard_logging_object"]
         return await super().async_log_success_event(kwargs, response_obj, start_time, end_time)

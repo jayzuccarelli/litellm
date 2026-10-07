@@ -45,6 +45,7 @@ def test_empty_tool_call_id_is_skipped():
     )
 
     assert result == [], "Tool messages with empty call_id should be skipped, not created"
+    print("[OK] Empty call_id messages are correctly skipped")
 
 
 @pytest.mark.usefixtures("_vcr_outcome_gate", "setup_and_teardown")
@@ -71,6 +72,7 @@ def test_empty_tool_call_id_in_messages_list_is_removed():
     # The tool message with empty tool_call_id should be removed
     tool_messages = [msg for msg in fixed_messages if msg.get("role") == "tool"]
     assert len(tool_messages) == 0, "Tool messages with empty tool_call_id should be removed from the list"
+    print("[OK] Empty tool_call_id messages are correctly removed from messages list")
 
 
 @pytest.mark.usefixtures("_vcr_outcome_gate", "setup_and_teardown")

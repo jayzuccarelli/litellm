@@ -89,6 +89,7 @@ def test_tpm_rpm_updated():
     tpm_count_api_key = f"{deployment_id}:{deployment}:tpm:{current_minute}"
     rpm_count_api_key = f"{deployment_id}:{deployment}:rpm:{current_minute}"
 
+    print(f"tpm_count_api_key={tpm_count_api_key}")
     assert response_obj["usage"]["total_tokens"] == test_cache.get_cache(key=tpm_count_api_key)
     assert 1 == test_cache.get_cache(key=rpm_count_api_key)
 

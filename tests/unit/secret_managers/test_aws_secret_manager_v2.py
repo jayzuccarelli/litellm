@@ -572,6 +572,8 @@ def test_load_aws_secret_manager_with_settings(monkeypatch: pytest.MonkeyPatch):
     """
     Test loading AWS Secret Manager with key_management_settings
     """
+    import litellm
+
     settings = KeyManagementSettings(
         store_virtual_keys=True,
         aws_region_name="us-east-1",

@@ -53,6 +53,7 @@ def test_guardrail_masking_logging_only():
         time.sleep(3)
         mock_call.assert_called_once()
 
+        print(mock_call.call_args.kwargs["kwargs"]["messages"][0]["content"])
         assert mock_call.call_args.kwargs["kwargs"]["messages"][0]["content"] == "Hey, my name is [NAME]."
 
 

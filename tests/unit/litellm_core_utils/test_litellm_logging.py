@@ -39,7 +39,6 @@ from litellm.litellm_core_utils.litellm_logging import (
 )
 from litellm.litellm_core_utils.logging_worker import GLOBAL_LOGGING_WORKER
 from litellm.llms.base_llm.ocr.transformation import OCRUsageInfo
-from litellm.proxy._types import UserAPIKeyAuth
 from litellm.proxy.hooks.cache_control_check import _PROXY_CacheControlCheck
 from litellm.proxy.hooks.max_iterations_limiter import _PROXY_MaxIterationsHandler
 from litellm.types.llms.openai import ResponseAPIUsage, ResponseCompletedEvent, ResponsesAPIResponse
@@ -10789,6 +10788,8 @@ def test_merge_litellm_metadata_skip_non_serializable():
     """
     Test that non-serializable objects like UserAPIKeyAuth are skipped.
     """
+    from litellm.proxy._types import UserAPIKeyAuth
+
     user_api_key_auth = UserAPIKeyAuth(
         api_key="test-key",
         user_id="test-user",

@@ -382,6 +382,7 @@ def test_simple_completion_streaming():
     )
 
     for chunk in resp:
+        print(chunk)
         if chunk.choices[0].finish_reason is None:
             assert isinstance(chunk.choices[0].delta.content, str)
         else:

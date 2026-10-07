@@ -933,14 +933,12 @@ class TestGetModelCostMapFallback:
         assert isinstance(result, dict)
         assert len(result) > 0
 
+    @pytest.mark.usefixtures("local_model_cost_map")
     def test_should_fallback_to_backup_on_network_error(self):
         """When upstream is unreachable, should fall back to local backup."""
         with patch(
             "httpx.get",
-            side_effect=httpx.ConnectError(
-                "Connection refused",
-                request=httpx.Request("GET", "https://fake-url.com/model_prices.json"),
-            ),
+            side_effect=Exception("Connection refused"),
         ):
             result = get_model_cost_map("https://fake-url.com/model_prices.json")
 

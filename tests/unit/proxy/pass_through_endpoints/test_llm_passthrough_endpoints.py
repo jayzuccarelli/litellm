@@ -162,6 +162,14 @@ def test_add_vertex_pass_through_deployment():
     )
 
     # current state of pass-through vertex router
+    print("\n vertex_pass_through_router.deployment_key_to_vertex_credentials\n\n")
+    print(
+        json.dumps(
+            passthrough_endpoint_router.deployment_key_to_vertex_credentials,
+            indent=4,
+            default=str,
+        )
+    )
 
     vertex_creds = passthrough_endpoint_router.get_vertex_credentials(project_id="test-project", location="us-central1")
 

@@ -237,6 +237,7 @@ class TestEUAIActArticle5ConditionalMatching:
         blocked_count = sum(1 for _, expected, _ in TEST_CASES if expected == "BLOCK")
         allowed_count = sum(1 for _, expected, _ in TEST_CASES if expected == "ALLOW")
 
+        print(f"\n{'=' * 60}")
         print(f"EU AI Act Article 5 Test Summary")
         print(f"{'=' * 60}")
         print(f"Total test cases: {total}")

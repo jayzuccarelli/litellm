@@ -68,6 +68,7 @@ async def test_generic_api_callback():
 
     # Get the actual request body from the mock
     actual_url = mock_post.call_args[1]["url"]
+    print("##########\n")
     print(
         "logs were flushed to URL",
         actual_url,
