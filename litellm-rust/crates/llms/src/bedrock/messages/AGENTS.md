@@ -13,4 +13,4 @@
 
 # References
 
-- [APIs supported by Amazon Bedrock, by endpoint](https://docs.aws.amazon.com/bedrock/latest/userguide/apis.md)
+- https://docs.aws.amazon.com/bedrock/latest/userguide/apis.md
